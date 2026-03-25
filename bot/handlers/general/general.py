@@ -56,12 +56,17 @@ async def handle_scores(lms_client: LMSClient, lab_id: Optional[str] = None) -> 
         labs = await lms_client.get_labs()
         lab_title = lab_id
         for lab in labs:
-            if lab.get("name") == lab_id:
-                lab_title = lab.get("title", lab_id)
-                break
+            try:
+                # We expect the name 'lab-XX' in 'attributes' if missing, but let's check id parsing too
+                # since items endpoint doesn't return `name`, only `title`, `id` and `attributes`
+                if f"lab-{lab.get('id', 0):02d}" == lab_id or lab.get("name") == lab_id:
+                    lab_title = lab.get("title", lab_id)
+                    break
+            except Exception:
+                pass
 
         score_list = "\n".join(
-            f"- {score['task_title']}: {score['pass_rate']:.1f}% ({score['attempts']} attempts)"
+            f"- {score.get('task', score.get('task_title', 'Unknown'))}: {score.get('pass_rate', score.get('avg_score', 0.0)):.1f}% ({score.get('attempts', 0)} attempts)"
             for score in scores
         )
         return f"Pass rates for {lab_title}:\n{score_list}"
