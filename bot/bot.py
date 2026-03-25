@@ -3,13 +3,17 @@ import argparse
 import logging
 import sys
 
-from aiogram import Bot, Dispatcher, types
-from aiogram.filters import Command
+# Parse arguments first to check for --test mode before initializing settings
+parser = argparse.ArgumentParser(description="LMS Telegram Bot")
+parser.add_argument("--test", type=str, help="Run in test mode with the given command")
+args, _ = parser.parse_known_args()
 
 from config import settings
 from registry import COMMAND_HANDLERS
 import handlers.general  # Register command handlers
 from services.lms import LMSClient
+from aiogram import Bot, Dispatcher, types
+from aiogram.filters import Command
 
 lms_client = LMSClient(base_url=settings.lms_api_base_url, api_key=settings.lms_api_key)
 
@@ -17,7 +21,7 @@ lms_client = LMSClient(base_url=settings.lms_api_base_url, api_key=settings.lms_
 async def run_test_mode(command: str):
     """Runs the bot in test mode for a single command."""
     logging.basicConfig(level=logging.INFO)
-    logging.info(f"Running in test mode for command: {command}")
+    # logging.info(f"Running in test mode for command: {command}")
 
     command_parts = command.split()
     main_command = command_parts[0]
