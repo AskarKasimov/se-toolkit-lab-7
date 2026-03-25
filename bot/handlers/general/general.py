@@ -27,10 +27,14 @@ async def handle_labs(lms_client: LMSClient) -> str:
         labs = await lms_client.get_labs()
         if not labs:
             return "No labs available."
+        valid_labs = [
+            lab
+            for lab in labs
+            if lab.get("type") == "lab" and "name" in lab and "title" in lab
+        ]
         lab_list = "\n".join(
             f"- {lab['name']} — {lab['title']}"
-            for lab in sorted(labs, key=lambda x: x["name"])
-            if lab["type"] == "lab"
+            for lab in sorted(valid_labs, key=lambda x: x["name"])
         )
         return f"Available labs:\n{lab_list}"
     except httpx.ConnectError as e:
@@ -52,10 +56,10 @@ async def handle_scores(lms_client: LMSClient, lab_id: Optional[str] = None) -> 
 
         # Find the lab title
         labs = await lms_client.get_labs()
-        lab_title = ""
+        lab_title = lab_id
         for lab in labs:
-            if lab["name"] == lab_id:
-                lab_title = lab["title"]
+            if lab.get("name") == lab_id:
+                lab_title = lab.get("title", lab_id)
                 break
 
         score_list = "\n".join(
