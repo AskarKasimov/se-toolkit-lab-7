@@ -1,5 +1,9 @@
+import httpx
 from registry import COMMAND_HANDLERS
 from services.lms import LMSClient
+
+
+from typing import Optional
 
 
 def handle_start() -> str:
@@ -29,12 +33,18 @@ async def handle_labs(lms_client: LMSClient) -> str:
             if lab["type"] == "lab"
         )
         return f"Available labs:\n{lab_list}"
+    except httpx.ConnectError as e:
+        return f"Backend error: connection refused ({e.request.url}). Check that the services are running."
+    except httpx.HTTPStatusError as e:
+        return f"Backend error: HTTP {e.response.status_code} {e.response.reason_phrase}. The backend service may be down."
     except Exception as e:
         return f"Backend error: {e}"
 
 
-async def handle_scores(lms_client: LMSClient, lab_id: str) -> str:
+async def handle_scores(lms_client: LMSClient, lab_id: Optional[str] = None) -> str:
     """Handles the /scores command."""
+    if not lab_id:
+        return "Please specify a lab ID. Usage: /scores <lab_id>"
     try:
         scores = await lms_client.get_scores(lab_id)
         if not scores:
@@ -53,6 +63,10 @@ async def handle_scores(lms_client: LMSClient, lab_id: str) -> str:
             for score in scores
         )
         return f"Pass rates for {lab_title}:\n{score_list}"
+    except httpx.ConnectError as e:
+        return f"Backend error: connection refused ({e.request.url}). Check that the services are running."
+    except httpx.HTTPStatusError as e:
+        return f"Backend error: HTTP {e.response.status_code} {e.response.reason_phrase}. The backend service may be down."
     except Exception as e:
         return f"Backend error: {e}"
 

@@ -36,6 +36,8 @@ class LMSClient:
                 return f"Backend error: connection refused ({e.request.url}). Check that the services are running."
             except httpx.HTTPStatusError as e:
                 return f"Backend error: HTTP {e.response.status_code} {e.response.reason_phrase}. The backend service may be down."
+            except Exception as e:
+                return f"Backend error: {e}"
 
     async def get_labs(self) -> List[Dict[str, Any]]:
         """
