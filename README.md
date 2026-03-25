@@ -91,3 +91,44 @@ By the end of this lab, you should be able to say:
 2. [Backend Integration](./lab/tasks/required/task-2.md) — P0: slash commands + real data
 3. [Intent-Based Natural Language Routing](./lab/tasks/required/task-3.md) — P1: LLM tool use
 4. [Containerize and Document](./lab/tasks/required/task-4.md) — P3: containerize + deploy
+
+## Deploy
+
+### Required Environment Variables
+
+To deploy the bot, ensure you have a `.env.docker.secret` file with the following variables alongside the backend variables:
+
+```env
+BOT_TOKEN=your_telegram_bot_token
+LMS_API_KEY=your_lms_api_key
+LLM_API_KEY=your_llm_api_key
+```
+
+### Docker Compose Commands
+
+To deploy the entire stack including the bot:
+
+```sh
+# Start all services in the background
+docker compose --env-file .env.docker.secret up -d --build
+
+# View the status of all containers
+docker compose --env-file .env.docker.secret ps
+```
+
+### How to Verify
+
+1. Check if the bot container is running:
+
+   ```sh
+   docker compose --env-file .env.docker.secret ps bot
+   ```
+
+2. Inspect the bot logs for startup success:
+
+   ```sh
+   docker compose --env-file .env.docker.secret logs bot --tail 20
+   ```
+
+   Look for polling initialization and ensure there are no Python tracebacks.
+3. Open Telegram and send `/start`, `/health`, or natural language queries to verify it responds correctly.
