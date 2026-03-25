@@ -68,3 +68,151 @@ class LMSClient:
             )
             response.raise_for_status()
             return response.json()
+
+    async def get_items(self) -> List[Dict[str, Any]]:
+        """
+        Fetches the list of items.
+
+        Returns:
+            A list of item dictionaries.
+        """
+        async with httpx.AsyncClient() as client:
+            response = await client.get(f"{self.base_url}/items/", headers=self.headers)
+            response.raise_for_status()
+            return response.json()
+
+    async def get_learners(self) -> List[Dict[str, Any]]:
+        """
+        Fetches the list of learners.
+
+        Returns:
+            A list of learner dictionaries.
+        """
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                f"{self.base_url}/learners/", headers=self.headers
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def get_scores_distribution(self, lab_id: str) -> List[Dict[str, Any]]:
+        """
+        Fetches the scores distribution for a specific lab.
+
+        Args:
+            lab_id: The ID of the lab.
+
+        Returns:
+            A list of dictionaries containing scores distribution information.
+        """
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                f"{self.base_url}/analytics/scores?lab={lab_id}", headers=self.headers
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def get_pass_rates(self, lab_id: str) -> List[Dict[str, Any]]:
+        """
+        Fetches the pass rates for a specific lab.
+
+        Args:
+            lab_id: The ID of the lab.
+
+        Returns:
+            A list of dictionaries containing pass rate information.
+        """
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                f"{self.base_url}/analytics/pass-rates?lab={lab_id}",
+                headers=self.headers,
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def get_timeline(self, lab_id: str) -> List[Dict[str, Any]]:
+        """
+        Fetches the timeline data for a specific lab.
+
+        Args:
+            lab_id: The ID of the lab.
+
+        Returns:
+            A list of dictionaries containing timeline information.
+        """
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                f"{self.base_url}/analytics/timeline?lab={lab_id}", headers=self.headers
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def get_groups(self, lab_id: str) -> List[Dict[str, Any]]:
+        """
+        Fetches the groups for a specific lab.
+
+        Args:
+            lab_id: The ID of the lab.
+
+        Returns:
+            A list of dictionaries containing group information.
+        """
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                f"{self.base_url}/analytics/groups?lab={lab_id}", headers=self.headers
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def get_top_learners(
+        self, lab_id: str, limit: int = 10
+    ) -> List[Dict[str, Any]]:
+        """
+        Fetches the top learners for a specific lab.
+
+        Args:
+            lab_id: The ID of the lab.
+            limit: The maximum number of top learners to fetch.
+
+        Returns:
+            A list of dictionaries containing top learner information.
+        """
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                f"{self.base_url}/analytics/top-learners?lab={lab_id}&limit={limit}",
+                headers=self.headers,
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def get_completion_rate(self, lab_id: str) -> List[Dict[str, Any]]:
+        """
+        Fetches the completion rate for a specific lab.
+
+        Args:
+            lab_id: The ID of the lab.
+
+        Returns:
+            A list of dictionaries containing completion rate information.
+        """
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                f"{self.base_url}/analytics/completion-rate?lab={lab_id}",
+                headers=self.headers,
+            )
+            response.raise_for_status()
+            return response.json()
+
+    async def trigger_sync(self) -> Dict[str, Any]:
+        """
+        Triggers a sync for the pipeline.
+
+        Returns:
+            A dictionary containing the sync response.
+        """
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"{self.base_url}/pipeline/sync", headers=self.headers
+            )
+            response.raise_for_status()
+            return response.json()

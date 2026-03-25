@@ -22,7 +22,18 @@ async def run_test_mode(command: str):
     """Runs the bot in test mode for a single command."""
     logging.basicConfig(level=logging.WARNING)
     logging.getLogger("httpx").setLevel(logging.WARNING)
-    # logging.info(f"Running in test mode for command: {command}")
+
+    # Use the IntentRouter inside test mode if not starting with /
+    if not command.startswith("/"):
+        from services.router import IntentRouter
+
+        router = IntentRouter(lms_client)
+        try:
+            response = await router.route(command)
+            print(response)
+        except Exception as e:
+            print(f"An error occurred: {e}")
+        sys.exit(0)
 
     command_parts = command.split()
     main_command = command_parts[0]
@@ -61,7 +72,17 @@ async def main():
     # Register command handlers
     async def start_command_handler(message: types.Message):
         """Handles the /start command."""
-        await message.answer(COMMAND_HANDLERS["/start"]())
+        from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+
+        keyboard = ReplyKeyboardMarkup(
+            keyboard=[
+                [KeyboardButton(text="what labs are available?")],
+                [KeyboardButton(text="show me scores for lab 4")],
+                [KeyboardButton(text="who are the top 5 students?")],
+            ],
+            resize_keyboard=True,
+        )
+        await message.answer(COMMAND_HANDLERS["/start"](), reply_markup=keyboard)
 
     async def help_command_handler(message: types.Message):
         """Handles the /help command."""
@@ -93,15 +114,20 @@ async def main():
     dp.message.register(labs_command_handler, Command(commands=["labs"]))
     dp.message.register(scores_command_handler, Command(commands=["scores"]))
 
-    # A simple handler for any text message
+    from services.router import IntentRouter
+
+    router = IntentRouter(lms_client)  # A simple handler for any text message
+
     async def echo_handler(message: types.Message) -> None:
         """Just prints the message text back."""
         try:
-            await message.answer(
-                "Unknown command. Use /help to see available commands."
-            )
-        except TypeError:
-            await message.answer("An error occurred.")
+            if message.text:
+                response = await router.route(message.text)
+                await message.answer(response)
+            else:
+                await message.answer("Please send text.")
+        except Exception as e:
+            await message.answer(f"An error occurred: {e}")
 
     dp.message.register(echo_handler)
 
