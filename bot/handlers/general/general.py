@@ -28,13 +28,11 @@ async def handle_labs(lms_client: LMSClient) -> str:
         if not labs:
             return "No labs available."
         valid_labs = [
-            lab
-            for lab in labs
-            if lab.get("type") == "lab" and "name" in lab and "title" in lab
+            lab for lab in labs if lab.get("type") == "lab" and "title" in lab
         ]
         lab_list = "\n".join(
-            f"- {lab['name']} — {lab['title']}"
-            for lab in sorted(valid_labs, key=lambda x: x["name"])
+            f"- {lab['title']}"
+            for lab in sorted(valid_labs, key=lambda x: x.get("id", 0))
         )
         return f"Available labs:\n{lab_list}"
     except httpx.ConnectError as e:
