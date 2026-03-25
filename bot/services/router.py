@@ -183,7 +183,7 @@ class IntentRouter:
         messages = [
             {
                 "role": "system",
-                "content": "You are a helpful assistant for a Learning Management System (LMS). Use the provided tools to answer user questions about labs, learners, scores, and statistics. Provide clear, concise answers. If a tool fails, inform the user.",
+                "content": "You are a helpful assistant for a Learning Management System (LMS). Use the provided tools to answer user questions about labs, learners, scores, and statistics. Provide clear, concise answers. If a tool fails, inform the user. When asked to compare items (like labs or groups), you must use the appropriate tools to fetch data for all items needed before giving your final answer. Do not describe your intermediate steps or calculations to the user; just fetch the necessary data immediately using the tools and then provide the final answer.",
             },
             {"role": "user", "content": user_message},
         ]
@@ -223,7 +223,22 @@ class IntentRouter:
 
                     for tool_call in message["tool_calls"]:
                         fn_name = tool_call["function"]["name"]
-                        args_str = tool_call["function"]["arguments"]
+                        args_str = tool_call["function"]["arguments"] or "{}"
+
+                        if not fn_name:
+                            result_str = json.dumps(
+                                {"error": "No function name provided"}
+                            )
+                            messages.append(
+                                {
+                                    "role": "tool",
+                                    "tool_call_id": tool_call["id"],
+                                    "name": "unknown",
+                                    "content": result_str,
+                                }
+                            )
+                            continue
+
                         try:
                             args = json.loads(args_str)
                         except json.JSONDecodeError:

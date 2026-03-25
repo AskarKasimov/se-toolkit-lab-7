@@ -72,15 +72,29 @@ async def main():
     # Register command handlers
     async def start_command_handler(message: types.Message):
         """Handles the /start command."""
-        from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+        from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-        keyboard = ReplyKeyboardMarkup(
-            keyboard=[
-                [KeyboardButton(text="what labs are available?")],
-                [KeyboardButton(text="show me scores for lab 4")],
-                [KeyboardButton(text="who are the top 5 students?")],
-            ],
-            resize_keyboard=True,
+        keyboard = InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(
+                        text="what labs are available?",
+                        callback_data="what labs are available?",
+                    )
+                ],
+                [
+                    InlineKeyboardButton(
+                        text="show me scores for lab 4",
+                        callback_data="show me scores for lab 4",
+                    )
+                ],
+                [
+                    InlineKeyboardButton(
+                        text="who are the top 5 students?",
+                        callback_data="who are the top 5 students?",
+                    )
+                ],
+            ]
         )
         await message.answer(COMMAND_HANDLERS["/start"](), reply_markup=keyboard)
 
@@ -129,7 +143,24 @@ async def main():
         except Exception as e:
             await message.answer(f"An error occurred: {e}")
 
+    async def callback_query_handler(callback_query: types.CallbackQuery):
+        """Hands callback queries from inline keyboards."""
+        try:
+            if callback_query.data and isinstance(
+                callback_query.message, types.Message
+            ):
+                await callback_query.message.answer(
+                    "Processing your request..."
+                )  # Let user know
+                response = await router.route(callback_query.data)
+                await callback_query.message.answer(response)
+                await callback_query.answer()
+        except Exception as e:
+            if isinstance(callback_query.message, types.Message):
+                await callback_query.message.answer(f"An error occurred: {e}")
+
     dp.message.register(echo_handler)
+    dp.callback_query.register(callback_query_handler)
 
     await dp.start_polling(bot)
 
