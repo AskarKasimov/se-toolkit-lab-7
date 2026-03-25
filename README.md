@@ -84,7 +84,8 @@ By the end of this lab, you should be able to say:
 1. Complete the [lab setup](./lab/setup/setup-simple.md#lab-setup)
 
 > **Note**: First time in this course? Do the [full setup](./lab/setup/setup-full.md#lab-setup) instead.
-
+>
+>
 ### Required
 
 1. [Plan and Scaffold](./lab/tasks/required/task-1.md) — P0: project structure + `--test` mode
