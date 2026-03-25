@@ -9,7 +9,9 @@ class Settings(BaseSettings):
     lms_api_key: str = ""
     llm_api_key: str = ""
 
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+    model_config = SettingsConfigDict(
+        env_file=".env.bot.secret", env_file_encoding="utf-8"
+    )
 
 
 settings = Settings()

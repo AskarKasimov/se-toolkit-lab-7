@@ -31,11 +31,13 @@ class LMSClient:
                 )
                 response.raise_for_status()
                 items = response.json()
-                return f"Backend is healthy. {len(items)} items available."
+                return f"Health is ok. {len(items)} items available."
             except httpx.ConnectError as e:
                 return f"Backend error: connection refused ({e.request.url}). Check that the services are running."
             except httpx.HTTPStatusError as e:
                 return f"Backend error: HTTP {e.response.status_code} {e.response.reason_phrase}. The backend service may be down."
+            except Exception as e:
+                return f"Backend error: {e}"
 
     async def get_labs(self) -> List[Dict[str, Any]]:
         """

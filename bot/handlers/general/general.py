@@ -1,5 +1,9 @@
+import httpx
 from registry import COMMAND_HANDLERS
 from services.lms import LMSClient
+
+
+from typing import Optional
 
 
 def handle_start() -> str:
@@ -23,18 +27,26 @@ async def handle_labs(lms_client: LMSClient) -> str:
         labs = await lms_client.get_labs()
         if not labs:
             return "No labs available."
+        valid_labs = [
+            lab for lab in labs if lab.get("type") == "lab" and "title" in lab
+        ]
         lab_list = "\n".join(
-            f"- {lab['name']} — {lab['title']}"
-            for lab in sorted(labs, key=lambda x: x["name"])
-            if lab["type"] == "lab"
+            f"- {lab['title']}"
+            for lab in sorted(valid_labs, key=lambda x: x.get("id", 0))
         )
         return f"Available labs:\n{lab_list}"
+    except httpx.ConnectError as e:
+        return f"Backend error: connection refused ({e.request.url}). Check that the services are running."
+    except httpx.HTTPStatusError as e:
+        return f"Backend error: HTTP {e.response.status_code} {e.response.reason_phrase}. The backend service may be down."
     except Exception as e:
         return f"Backend error: {e}"
 
 
-async def handle_scores(lms_client: LMSClient, lab_id: str) -> str:
+async def handle_scores(lms_client: LMSClient, lab_id: Optional[str] = None) -> str:
     """Handles the /scores command."""
+    if not lab_id:
+        return "Please specify a lab ID. Usage: /scores <lab_id>"
     try:
         scores = await lms_client.get_scores(lab_id)
         if not scores:
@@ -42,17 +54,26 @@ async def handle_scores(lms_client: LMSClient, lab_id: str) -> str:
 
         # Find the lab title
         labs = await lms_client.get_labs()
-        lab_title = ""
+        lab_title = lab_id
         for lab in labs:
-            if lab["name"] == lab_id:
-                lab_title = lab["title"]
-                break
+            try:
+                # We expect the name 'lab-XX' in 'attributes' if missing, but let's check id parsing too
+                # since items endpoint doesn't return `name`, only `title`, `id` and `attributes`
+                if f"lab-{lab.get('id', 0):02d}" == lab_id or lab.get("name") == lab_id:
+                    lab_title = lab.get("title", lab_id)
+                    break
+            except Exception:
+                pass
 
         score_list = "\n".join(
-            f"- {score['task_title']}: {score['pass_rate']:.1f}% ({score['attempts']} attempts)"
+            f"- {score.get('task', score.get('task_title', 'Unknown'))}: {score.get('pass_rate', score.get('avg_score', 0.0)):.1f}% ({score.get('attempts', 0)} attempts)"
             for score in scores
         )
         return f"Pass rates for {lab_title}:\n{score_list}"
+    except httpx.ConnectError as e:
+        return f"Backend error: connection refused ({e.request.url}). Check that the services are running."
+    except httpx.HTTPStatusError as e:
+        return f"Backend error: HTTP {e.response.status_code} {e.response.reason_phrase}. The backend service may be down."
     except Exception as e:
         return f"Backend error: {e}"
 

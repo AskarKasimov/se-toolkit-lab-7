@@ -20,7 +20,8 @@ lms_client = LMSClient(base_url=settings.lms_api_base_url, api_key=settings.lms_
 
 async def run_test_mode(command: str):
     """Runs the bot in test mode for a single command."""
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.WARNING)
+    logging.getLogger("httpx").setLevel(logging.WARNING)
     # logging.info(f"Running in test mode for command: {command}")
 
     command_parts = command.split()
