@@ -30,8 +30,7 @@ class LMSClient:
                     f"{self.base_url}/items/", headers=self.headers
                 )
                 response.raise_for_status()
-                items = response.json()
-                return f"Backend is healthy. {len(items)} items available."
+                return "Health is ok"
             except httpx.ConnectError as e:
                 return f"Backend error: connection refused ({e.request.url}). Check that the services are running."
             except httpx.HTTPStatusError as e:
