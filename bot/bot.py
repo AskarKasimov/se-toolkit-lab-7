@@ -10,7 +10,7 @@ args, _ = parser.parse_known_args()
 
 from config import settings
 from registry import COMMAND_HANDLERS
-import handlers.general  # Register command handlers
+import handlers.general.general  # Register command handlers
 from services.lms import LMSClient
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command
